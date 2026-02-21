@@ -1,7 +1,10 @@
 [project]
 name = "cypherstone"
 version = "0.1.0"
-description = "Add your description here"
+description = "A simple tool to encrypt local files"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "cryptography>=46.0.3",
+    "customtkinter>=5.2.2",
+]
