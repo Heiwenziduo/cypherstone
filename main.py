@@ -1,4 +1,4 @@
-from srcipt.gui import init_gui
+from gui.index import init_gui
 
 
 def main():

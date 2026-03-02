@@ -7,5 +7,6 @@ requires-python = ">=3.14"
 dependencies = [
     "cryptography>=46.0.3",
     "customtkinter>=5.2.2",
+    "pyinstaller>=6.19.0",
     "pyperclip>=1.11.0",
 ]
