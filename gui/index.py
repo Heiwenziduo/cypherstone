@@ -1,6 +1,7 @@
 import os
 import customtkinter as ctk
 from gui.shell import Shell
+from srcipt.data import update_json, json_data
 from srcipt.metadata import get_app_version
 from tkinter import filedialog
 
@@ -33,10 +34,10 @@ class App(ctk.CTk):
     self.button2.grid(row=999, column=1, pady=(0, 10))
 
   def button_encrypt(self):
-    print("Encrypt ", self.configure_frame.get(), self.filepicker_frame.file_path_var.get())
+    print("Encrypt ", self.configure_frame.get_setting(), self.filepicker_frame.file_path_var.get())
 
   def button_decrypt(self):
-    print("Decrypt ", self.configure_frame.get())
+    print("Decrypt ", self.configure_frame.get_setting())
 
 ##
 class UserFrame(ctk.CTkFrame):
@@ -45,7 +46,6 @@ class UserFrame(ctk.CTkFrame):
 
 ##
 class ConfigureFrame(ctk.CTkFrame):
-  box_list = ["deepclean", "check2"]
   def __init__(self, master):
     super().__init__(master)
     # self.title = ctk.CTkLabel(self, text="Configure", fg_color="gray30", corner_radius=6, text_color="white")
@@ -56,20 +56,26 @@ class ConfigureFrame(ctk.CTkFrame):
     # self.checkbox_2 = ctk.CTkCheckBox(self, text="checkbox 2")
     # self.checkbox_2.grid(row=1, column=0, padx=10, pady=(10, 0), sticky="w")
 
-    for index, value in enumerate(self.box_list):
-      checkbox = ctk.CTkCheckBox(self, text=value)
+    self.checkboxs = {}
+    for index, value in enumerate(json_data):
+      checkbox = ctk.CTkCheckBox(self, text=value, command=self.update_setting)
       checkbox.grid(row=index + 1, padx=10, pady=(0, 10), sticky="w")
+      if json_data[value]==1:
+        checkbox.select()
+        print("select checkbox", index+1)
       if index==0:
         checkbox.grid(pady=(10, 10)) # overwrite above
-      setattr(self, value, checkbox)
+      self.checkboxs[value] = checkbox
 
-  def get(self):
-    result = []
-    for index, value in enumerate(self.box_list):
-      checkbox = getattr(self, value)
-      if checkbox.get() == 1:
-        result.append(checkbox.cget("text"))
-    return result
+  def update_setting(self):
+    setting = self.get_setting()
+    update_json(setting)
+
+  def get_setting(self):
+    setting_data = {}
+    for k in self.checkboxs:
+      setting_data[k] = self.checkboxs[k].get()
+    return setting_data
 
 ##
 class FilepickerFrame(ctk.CTkFrame):
