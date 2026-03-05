@@ -1,5 +1,7 @@
 import json
 import os
+from pathlib import Path
+from script.db import KeyDatabase
 
 setting_list = ["check1", "check2", "check3", "check4"]
 json_data = {item : 0 for index, item in enumerate(setting_list)}
@@ -33,10 +35,28 @@ def update_json(data):
       json.dump(data, f)
     print("Local files have been updated.")
 
-# completely synchronous
+# completely synchronous (a synchronous file system, amazing!)
 if __name__ == "__main__":
   print(json_data)
   for i, v in enumerate(json_data):
     print(i, v)
 
-## SQLite for users
+## SQLite for users (a user is a stored public key or key pairs)
+no_user = False
+home_dir = Path.home() / ".cypherstone" # C:\Users\{current user}\.cypherstone
+# userindex_json = home_dir / "index.json"
+# if userindex_json.exists():
+#   with open(userindex_json) as f:
+#     saved_user = json.load(f)
+#     print("Loading saved user...", saved_user)
+# else:
+#   home_dir.mkdir(parents=True, exist_ok=True)
+#   no_user = True
+#   print("no user")
+
+user_db = KeyDatabase(home_dir / "keys_storage.db")
+print(f"User list: {user_db.list_all_aliases()}")
+if len(user_db.list_all_aliases()) == 0:
+  no_user = True
+
+# print("result", user_db.list_all_table_data())

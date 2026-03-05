@@ -1,9 +1,11 @@
 import os
 import customtkinter as ctk
 from gui.shell import Shell
-from srcipt.data import update_json, json_data
-from srcipt.metadata import get_app_version
-from tkinter import filedialog
+from script.data import update_json, json_data
+from script.metadata import get_app_version
+from tkinter import filedialog, ttk
+import tkinter as tk
+from script.data import user_db
 
 def init_gui():
   ctk.set_appearance_mode("dark")
@@ -43,6 +45,44 @@ class App(ctk.CTk):
 class UserFrame(ctk.CTkFrame):
   def __init__(self, master):
     super().__init__(master)
+    # 1. Create a Style object
+    style = ttk.Style()
+    # 2. Pick a theme that allows color changes (like 'clam' or 'default')
+    style.theme_use("clam")
+    # 3. Configure Treeview colors to match CTk Dark Theme
+    # Background: #242424, Foreground: white, Field (empty space): #242424
+    style.configure("Treeview",
+                    background="#2b2b2b",
+                    foreground="white",
+                    fieldbackground="#2b2b2b",
+                    bordercolor="#2b2b2b",
+                    borderwidth=0)
+    # Configure the Headers
+    style.configure("Treeview.Heading",
+                    background="#333333",
+                    foreground="white",
+                    relief="flat")
+    # Change selection color
+    style.map("Treeview", background=[('selected', '#1f538d')])
+    style.map("Treeview.Heading",
+          background=[('active', '#1f538d')], # Changes to blue on hover
+          foreground=[('active', 'white')])   # Keeps text white
+
+    self.tree = ttk.Treeview(self, columns=("FP", "Name", "Status"), show='headings')
+    self.tree.heading("FP", text="FP")
+    self.tree.heading("Name", text="Name")
+    self.tree.heading("Status", text="Status")
+    self.tree.column("FP", width=100, stretch=False)
+    self.tree.column("Name", stretch=False, anchor="center")
+    self.tree.column("Status", width=80, stretch=False, anchor="center")
+    self.tree.pack(fill="both", expand=True)
+
+    self.init_table(data=user_db.list_all_table_data())
+
+  def init_table(self, data):
+    self.tree.delete()
+    for item in data:
+        self.tree.insert("", tk.END, values=item)
 
 ##
 class ConfigureFrame(ctk.CTkFrame):
@@ -62,7 +102,7 @@ class ConfigureFrame(ctk.CTkFrame):
       checkbox.grid(row=index + 1, padx=10, pady=(0, 10), sticky="w")
       if json_data[value]==1:
         checkbox.select()
-        print("select checkbox", index+1)
+        # print("select checkbox", index+1)
       if index==0:
         checkbox.grid(pady=(10, 10)) # overwrite above
       self.checkboxs[value] = checkbox

@@ -4,6 +4,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
 from openpgp import openpgp_encrypt, openpgp_decrypt
+from data import user_db
 
 '''
 cryptography depends on the OpenSSL C library for all cryptographic operation.
@@ -12,6 +13,31 @@ performance along with various certifications that may be relevant to developers
 '''
 
 passphrase = b"passphrase"
+_default_passphrase = b"alohomora"
+
+##
+def create_key_pairs(alias: str, key_size=2048, passphrase=_default_passphrase):
+  private_key = rsa.generate_private_key(
+    public_exponent=65537,
+    key_size=key_size,
+  )
+  public_key = private_key.public_key()
+
+  private_bytes = private_key.private_bytes(
+    encoding=serialization.Encoding.PEM,
+    format=serialization.PrivateFormat.TraditionalOpenSSL,
+    encryption_algorithm=serialization.BestAvailableEncryption(passphrase),
+  )
+  public_bytes = public_key.public_bytes(
+    encoding=serialization.Encoding.DER, # Use DER for a stable "identity"
+    format=serialization.PublicFormat.SubjectPublicKeyInfo
+)
+  user_db.save_key(
+    alias=alias,
+    fingerprint=hashlib.sha256(public_bytes).hexdigest(),
+    priv_bytes=private_bytes,
+    pub_bytes=public_bytes
+  )
 
 ##load
 if os.path.exists("private_key.pem"):
@@ -54,7 +80,7 @@ public_bytes = public_key.public_bytes(
 )
 # 2. Create a SHA-256 hash (the fingerprint)
 fingerprint = hashlib.sha256(public_bytes).hexdigest()
-print(f"Key Fingerprint: {fingerprint}")
+# print(f"Key Fingerprint: {fingerprint}")
 
 with open("public_key.pem", "wb") as f:
     f.write(public_key.public_bytes(
@@ -63,5 +89,7 @@ with open("public_key.pem", "wb") as f:
     ))
 
 if __name__ == "__main__":
+  ''''''
   # openpgp_encrypt(public_key=public_key)
-  openpgp_decrypt(private_key=private_key)
+  # openpgp_decrypt(private_key=private_key)
+  # create_key_pairs("test1919810")
