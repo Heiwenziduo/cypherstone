@@ -1,6 +1,7 @@
 import os
 from tkinter import filedialog
 
+from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.fernet import Fernet
@@ -11,7 +12,7 @@ _suffix = ".cys"
 _separator = b"---SEP---"
 
 ## use public key to encrypt a file
-def openpgp_encrypt(public_key):
+def openpgp_encrypt(public_key: rsa.RSAPublicKey):
   # 1. Generate a random Symmetric key (The "Session Key")
   session_key = Fernet.generate_key()
   cipher_aes = Fernet(session_key)
@@ -42,7 +43,7 @@ def openpgp_encrypt(public_key):
     f.write(encrypted_session_key + _separator + encrypted_data)
 
 ## private key to decrypt
-def openpgp_decrypt(private_key):
+def openpgp_decrypt(private_key: rsa.RSAPrivateKey):
   filename = browse_file()
   if not os.path.exists(filename):
     print("not exist")

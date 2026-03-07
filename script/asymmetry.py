@@ -3,8 +3,8 @@ import os
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
-from openpgp import openpgp_encrypt, openpgp_decrypt
-from data import user_db
+from script.openpgp import openpgp_encrypt, openpgp_decrypt
+from script.data import user_db
 
 '''
 cryptography depends on the OpenSSL C library for all cryptographic operation.

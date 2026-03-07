@@ -12,10 +12,12 @@ class KeyDatabase:
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS key_pairs (
                 alias TEXT,
-                fingerprint TEXT PRIMARY KEY,
+                fingerprint TEXT,
                 private_key BLOB,
                 public_key BLOB,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                expired_at TIMESTAMP,
+                PRIMARY KEY (fingerprint)
             )
         ''')
         self.conn.commit()
