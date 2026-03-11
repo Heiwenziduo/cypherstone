@@ -135,7 +135,7 @@ class FilepickerFrame(ctk.CTkFrame):
   def browse_file(self):
     filename = filedialog.askopenfilename(
       title="Select a file for CypherStone",
-      initialdir=os.path.expanduser("~/Documents")
+      # initialdir=os.path.expanduser("~/Documents")
     )
     if filename:
       self.file_path_var.set(filename)

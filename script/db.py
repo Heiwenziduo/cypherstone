@@ -28,11 +28,22 @@ class KeyDatabase:
         self.cursor.execute(query, (alias, fingerprint, priv_bytes, pub_bytes))
         self.conn.commit()
 
-    def get_key(self, alias):
+    def get_key_by_alias(self, alias):
         query = "SELECT private_key FROM key_pairs WHERE alias = ?"
         self.cursor.execute(query, (alias,))
         result = self.cursor.fetchone()
         return result[0] if result else None
+
+    def get_row_by_fp(self, fp):
+        query = "SELECT * FROM key_pairs WHERE fingerprint LIKE ?"
+        '''
+        When you only have the beginning of a string, you use the LIKE operator combined with a wildcard symbol (%).
+        The % acts as a "filler" for whatever comes after your 12 characters.
+        '''
+        self.cursor.execute(query, (f"{fp}%",))
+        result = self.cursor.fetchone()
+        # print(result) # row
+        return result if result else None
 
     def list_all_aliases(self):
         self.cursor.execute("SELECT alias FROM key_pairs")

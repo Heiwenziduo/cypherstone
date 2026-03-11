@@ -1,5 +1,7 @@
 import hashlib
 import os
+from pathlib import Path
+import sys
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
@@ -12,7 +14,6 @@ OpenSSL is the de facto standard for cryptographic libraries and provides high
 performance along with various certifications that may be relevant to developers.
 '''
 
-passphrase = b"passphrase"
 _default_passphrase = b"alohomora"
 
 ##
@@ -31,7 +32,7 @@ def create_key_pairs(alias: str, key_size=2048, passphrase=_default_passphrase):
   public_bytes = public_key.public_bytes(
     encoding=serialization.Encoding.DER, # Use DER for a stable "identity"
     format=serialization.PublicFormat.SubjectPublicKeyInfo
-)
+  )
   user_db.save_key(
     alias=alias,
     fingerprint=hashlib.sha256(public_bytes).hexdigest(),
@@ -39,12 +40,42 @@ def create_key_pairs(alias: str, key_size=2048, passphrase=_default_passphrase):
     pub_bytes=public_bytes
   )
 
+def import_keys(alias: str, file_path, password=_default_passphrase):
+  # TODO: import private
+  '''only public now'''
+  with open(file_path, "rb") as key_file:
+    # private_key = serialization.load_pem_private_key(
+    #   key_file.read(),
+    #   password=password,
+    # )
+    public_key = serialization.load_pem_public_key(
+      key_file.read(),
+    )
+    public_bytes = public_key.public_bytes(
+      encoding=serialization.Encoding.DER,
+      format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+    try:
+      user_db.save_key(
+        alias=alias,
+        fingerprint=hashlib.sha256(public_bytes).hexdigest(),
+        priv_bytes=None,
+        pub_bytes=public_bytes
+      )
+    except:
+      print(repr(sys.exception()))
+
+def export_public_key(fg: str, file_path):
+  ''''''
+  print()
+  # user_db.
+
 ##load
 if os.path.exists("private_key.pem"):
   with open("private_key.pem", "rb") as key_file:
     private_key = serialization.load_pem_private_key(
       key_file.read(),
-      password=passphrase,
+      password=_default_passphrase,
     )
   print("Key loaded successfully!")
 else:
@@ -70,7 +101,7 @@ with open("private_key.pem", "wb") as f:
     f.write(private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.TraditionalOpenSSL,
-        encryption_algorithm=serialization.BestAvailableEncryption(passphrase),
+        encryption_algorithm=serialization.BestAvailableEncryption(_default_passphrase),
     ))
 
 # 1. Get the public key bytes in a standard format
