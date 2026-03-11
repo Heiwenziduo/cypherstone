@@ -1,11 +1,12 @@
-import os
 import customtkinter as ctk
-from tkinter import Event, filedialog, ttk
 import tkinter as tk
-from script.data import user_db, file_path_picker
-from script.openpgp import openpgp_encrypt, openpgp_decrypt
-from script.asymmetry import import_keys, export_public_key, create_key_pairs
+from gui.console_screen import ConsoleScreen
+from gui.frame_decrypt import DecypherFrame
+from gui.frame_encrypt import EncypherFrame
+from gui.frame_setting import SettingFrame
+from gui.frame_user import UserFrame
 import gui.style_constants as sty
+from gui.console_screen import cys_console
 
 class CypherStoneApp(ctk.CTk):
     def __init__(self):
@@ -36,14 +37,6 @@ class CypherStoneApp(ctk.CTk):
         self.tabs_container.place(relx=0.85, rely=0.07, relwidth=0.15, relheight=0.9)
 
         # ==========================================
-        # BOTTOM CONSOLE SCREEN
-        # ==========================================
-        self.console_screen = ctk.CTkFrame(self.main_frame, height=180, corner_radius=2, fg_color=sty.console_bg,
-                                        border_color="#ffffff", border_width=1,
-                                        )
-        self.console_screen.pack(side="bottom", fill="both", **sty.bundle_main_frame_padding, pady=(0, 12))
-
-        # ==========================================
         # CUSTOM TITLE BAR
         # ==========================================
         self.title_bar = ctk.CTkFrame(self.main_frame, height=40, corner_radius=0, fg_color=sty.titlebar_bg, bg_color=TRANSPARENT_COLOR)
@@ -67,11 +60,11 @@ class CypherStoneApp(ctk.CTk):
         )
         self.close_btn.pack(side="right", padx=(5, 10), pady=8)
 
-        self.min_btn = ctk.CTkButton(
-            self.title_bar, text="—", width=24, height=24, corner_radius=12,
-            fg_color="transparent", border_width=2, border_color="#ffbd2e", text_color="#ffbd2e",
-            hover_color="#594314", command=self.minimize_window
-        )
+        # self.min_btn = ctk.CTkButton(
+        #     self.title_bar, text="—", width=24, height=24, corner_radius=12,
+        #     fg_color="transparent", border_width=2, border_color="#ffbd2e", text_color="#ffbd2e",
+        #     hover_color="#594314", command=self.minimize_window
+        # )
         # self.min_btn.pack(side="right", padx=0, pady=8)
 
         # ==========================================
@@ -105,6 +98,16 @@ class CypherStoneApp(ctk.CTk):
 
         # Keep a list so we can update their colors when clicked
         self.all_tabs = [self.tab_users, self.tab_encypher, self.tab_decypher, self.tab_setting]
+
+        # ==========================================
+        # BOTTOM CONSOLE SCREEN
+        # ==========================================
+        self.console_screen = ConsoleScreen(self.main_frame, height=180, corner_radius=2, fg_color=sty.console_bg,
+                                        border_color="#ffffff", border_width=1,
+                                        )
+        self.console_screen.pack(side="bottom", fill="both", **sty.bundle_main_frame_padding, pady=(0, 12))
+
+        self.after(200, lambda: cys_console("Welcome using CypherStone."))
 
     # --- TAB NAVIGATION LOGIC ---
     def create_side_tab(self, text, target_page, is_active=False):
@@ -164,197 +167,6 @@ class CypherStoneApp(ctk.CTk):
     def minimize_window(self):
         """Custom minimize function since we removed the OS one"""
         self.state('iconic')
-
-class UserFrame(ctk.CTkFrame):
-    ''''''
-    def __init__(self, master, *args, **kwargs):
-        super().__init__(master, *args, **kwargs)
-        '''
-        *args: Collects all positional arguments.
-        **kwargs: Collects all keyword arguments (like a=1).
-        '''
-        self.operation_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.operation_frame.pack(padx=(4, 4), pady=(4, 4), anchor=tk.CENTER, fill="both")
-        self.operation_frame_buttons = []
-        # operation_button_type = ("import", "export", "new pair") # quirk: n points at "new pair" always
-        # for n in operation_button_type:
-        #     button = ctk.CTkButton(self.operation_frame, text=n, width=80, command=lambda: self.user_operations(n))
-        #     button.pack(padx=(6, 0), pady=(0, 4), side="right")
-        #     self.operation_frame_buttons.append(button)
-        self.operation_frame_buttons.append(
-            ctk.CTkButton(self.operation_frame, text="export", 
-                          width=80, command=lambda: self.user_operations("export"), **sty.bundle_common_button)
-            )
-        self.operation_frame_buttons.append(
-            ctk.CTkButton(self.operation_frame, text="import", 
-                          width=80, command=lambda: self.user_operations("import"), **sty.bundle_common_button)
-            )
-        self.operation_frame_buttons.append(
-            ctk.CTkButton(self.operation_frame, text="new pair", 
-                          width=80, command=lambda: self.user_operations("new pair"), **sty.bundle_common_button)
-            )
-        for btn in self.operation_frame_buttons:
-            btn.pack(padx=(6, 0), pady=(0, 4), side="right")
-
-        # 1. Create a Style object
-        style = ttk.Style()
-        # 2. Pick a theme that allows color changes (like 'clam' or 'default')
-        style.theme_use("clam")
-        # 3. Configure Treeview colors to match CTk Dark Theme
-        # Background: #242424, Foreground: white, Field (empty space): #242424
-        style.configure("Treeview",
-                        background="#2b2b2b",
-                        foreground="white",
-                        fieldbackground="#2b2b2b",
-                        bordercolor="#2b2b2b",
-                        borderwidth=0)
-        # Configure the Headers
-        style.configure("Treeview.Heading",
-                        background="#333333",
-                        foreground="white",
-                        relief="flat")
-        # Change selection color
-        style.map("Treeview", background=[('selected', sty.cyan1)])
-        style.map("Treeview.Heading",
-            background=[('active', sty.cyan1)], # Changes to blue on hover
-            foreground=[('active', 'white')])   # Keeps text white
-
-        self.tree = ttk.Treeview(self, columns=("FP", "Name", "Status"), show='headings')
-        self.tree.heading("FP", text="FP")
-        self.tree.heading("Name", text="Name")
-        self.tree.heading("Status", text="Status")
-        self.tree.column("FP", width=100, stretch=False)
-        self.tree.column("Name", stretch=True, anchor="center")
-        self.tree.column("Status", width=80, stretch=False, anchor="center")
-        self.tree.pack(fill="both", expand=True, pady=(0, 0))
-
-        self.tree_selection_fp = ""
-        self.db_data = []
-        self.init_table()
-        '''
-        Since there is no "resizable" flag,
-        the common trick to stop a user from manually dragging the columns
-        is to bind the mouse events that trigger resizing and tell Python to ignore them.
-        '''
-        self.tree.bind('<Button-1>', lambda event: 'break' if self.tree.identify_region(event.x, event.y) == "separator" else None)
-        # Block the mouse cursor from changing to the 'resize' arrows
-        self.tree.bind('<Motion>', lambda event: 'break' if self.tree.identify_region(event.x, event.y) == "separator" else None)
-
-        # Triggered only on double-click
-        # self.tree.bind("<Double-1>", on_tree_select)
-        self.tree.bind("<<TreeviewSelect>>", self.on_tree_selected)
-
-    def init_table(self):
-        # clear all data and fetch again. # glitch: selection loss
-        for item in self.tree.get_children():
-            self.tree.delete(item)
-        self.db_data = user_db.list_all_table_data()
-        for item in self.db_data:
-            print("init row: ", item)
-            # if item[0] == self.tree_selection_fp:
-                # item = (self.tree_selection_fp + "?????" if i==0 else e for i, e in enumerate(item)) # generator object
-                # print(item)
-            self.tree.insert("", tk.END, values=item)
-
-    def on_tree_selected(self, event: Event[ttk.Treeview]):
-        tree = event.widget
-        selected_item = tree.selection()
-        print(selected_item)
-        selected_row = tree.item(selected_item[0])["values"]
-        if selected_item and selected_row[0] != self.tree_selection_fp:
-            # print(tree.item(selected_item[0])["values"])
-            self.tree_selection_fp = selected_row[0]
-            # tree.item(selected_item[0], values=(selected_row[0], "1111" + selected_row[1], selected_row[2]))
-            print("new fp", self.tree_selection_fp)
-            # self.init_table()
-
-    def update_current_user(self):
-        ''''''
-
-    def user_operations(self, button_type):
-        print(button_type)
-        if button_type == "import":
-            file_path = file_path_picker()
-            if file_path:
-                ## open a dialog and get alias
-                alias = self.open_input_dialog(text="Type in a number:", title="Test")
-                if alias:
-                    import_keys(alias, file_path=file_path)
-                else:
-                    print("alias can not be empty!")
-        elif button_type == "export":
-            rowdata = user_db.get_row_by_fp(self.tree_selection_fp)
-            if not rowdata:
-                print("///row-data is None///")
-                return
-            name = rowdata[0] + ".public_key.pem"
-            file_path = file_path_picker(name)
-            if file_path:
-                export_public_key("", file_path)
-            else:
-                print()
-
-        elif button_type == "new pair":
-            ## open a dialog and get alias
-            create_key_pairs("alias")
-            self.init_table()
-
-    def open_input_dialog(self, *args, **kwargs):
-        ''''''
-        dialog = ctk.CTkInputDialog(*args, **kwargs)
-        return dialog.get_input()
-
-
-class EncypherFrame(ctk.CTkFrame):
-    def __init__(self, master, *args, **kwargs):
-        super().__init__(master, *args, **kwargs)
-        
-        ## user selector
-        # self.user_selector = ctk.
-
-        self.process_path = ctk.StringVar(value="No file selected...")
-        self.result_path = ctk.StringVar(value="")
-
-        self.process_file_entry = ctk.CTkButton(
-            self, 
-            textvariable=self.process_path, 
-            fg_color="#333333", 
-            hover_color="#444444",
-            command=lambda: self.browse_file(self.process_path)
-        )
-        self.process_file_entry.pack(padx=10, pady=10, anchor="s")
-
-        self.result_file_entry = ctk.CTkButton(
-            self, 
-            textvariable=self.result_path, 
-            fg_color="#333333", 
-            hover_color="#444444",
-            command=lambda: self.browse_file(self.result_path)
-        )
-        self.result_file_entry.pack(padx=10, pady=10, anchor="s")
-
-        self.process_button = ctk.CTkButton(self, text="Process", command=self.encrypt_file)
-        self.process_button.pack(padx=10, pady=10, anchor="s")
-
-    def browse_file(self, text_var: ctk.StringVar):
-        filename = filedialog.askopenfilename(
-            title="Select a file for CypherStone",
-            # initialdir=os.path.expanduser("~/Documents")
-        )
-        if filename:
-            text_var.set(filename)
-
-    def encrypt_file(self):
-        print("encrypt: ", self.process_path.get(), " ---> ", self.result_path.get())
-        # openpgp_encrypt()
-
-class DecypherFrame(ctk.CTkFrame):
-    def __init__(self, master, *args, **kwargs):
-        super().__init__(master, *args, **kwargs)
-
-class SettingFrame(ctk.CTkFrame):
-    def __init__(self, master, *args, **kwargs):
-        super().__init__(master, *args, **kwargs)
 
 if __name__ == "__main__":
     app = CypherStoneApp()
