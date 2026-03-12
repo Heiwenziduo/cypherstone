@@ -2,7 +2,13 @@ import json
 import os
 from pathlib import Path
 from tkinter import filedialog
+from gui.console_screen import cys_console
 from script.db import KeyDatabase
+
+# --- GLOBAL INTERFACE ---
+_current_user_fp: str = ""
+def current_user_fp():
+  return _current_user_fp
 
 setting_list = ["check1", "check2", "check3", "check4"]
 json_data = {item : 0 for index, item in enumerate(setting_list)}
@@ -22,7 +28,7 @@ def file_path_picker(file_name=None):
           initialfile=file_name,
           # defaultextension=".pem",
       )
-    print(file_path)
+      # cys_console("save file to: ", file_path)
     return file_path
 
 ## json for setting

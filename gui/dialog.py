@@ -54,15 +54,16 @@ class CypherDialog(ctk.CTkToplevel):
         self.geometry(f"+{x}+{y}")
 
 class InputDialog(CypherDialog):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, pre_input: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.geometry("340x200")
         self.result = None # To store data
         # --- Layout ---
         self.label_1 = ctk.CTkLabel(self.main_frame, text="Key alias:", text_color="#ffffff", anchor="w")
         self.label_1.pack(fill="x", expand=True, side="top", padx=15, pady=(10, 0))
-        self.entry_1 = ctk.CTkEntry(self.main_frame, placeholder_text="Enter name")
+        self.entry_1 = ctk.CTkEntry(self.main_frame, placeholder_text="")
         self.entry_1.pack(fill="x", expand=True, padx=15, pady=(5, 10))
+        self.entry_1.insert(0, pre_input)
 
         # self.label_2 = ctk.CTkLabel(self.main_frame, text="Age:")
         # self.label_2.pack(pady=(10, 0))
@@ -86,9 +87,9 @@ class InputDialog(CypherDialog):
         print(f"Dialog input captured: {self.result}")
         self.destroy() # Close the dialog
 
-# --- How to call it from your main app ---
-def input_dialog(root):
-    dialog = InputDialog()
+def alias_dialog(root, pre_input: str = ""):
+    '''the very dialog to handle alias'''
+    dialog = InputDialog(pre_input)
     # Optional: wait for it to close if you need the data immediately
     root.wait_window(dialog)
     if dialog.result:

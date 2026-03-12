@@ -1,12 +1,11 @@
 import customtkinter as ctk
 import tkinter as tk
-from gui.console_screen import ConsoleScreen
 from gui.frame_decrypt import DecypherFrame
 from gui.frame_encrypt import EncypherFrame
 from gui.frame_setting import SettingFrame
 from gui.frame_user import UserFrame
 import gui.style_constants as sty
-from gui.console_screen import cys_console
+import gui.console_screen as csc
 
 class CypherStoneApp(ctk.CTk):
     def __init__(self):
@@ -102,12 +101,13 @@ class CypherStoneApp(ctk.CTk):
         # ==========================================
         # BOTTOM CONSOLE SCREEN
         # ==========================================
-        self.console_screen = ConsoleScreen(self.main_frame, height=180, corner_radius=2, fg_color=sty.console_bg,
+        self.console_screen = csc.ConsoleScreen(self.main_frame, height=180, corner_radius=2,
                                         border_color="#ffffff", border_width=1,
                                         )
         self.console_screen.pack(side="bottom", fill="both", **sty.bundle_main_frame_padding, pady=(0, 12))
+        csc._app_console_screen = self.console_screen
 
-        self.after(200, lambda: cys_console("Welcome using CypherStone."))
+        self.after(200, lambda: csc.cys_console("Welcome using CypherStone."))
 
     # --- TAB NAVIGATION LOGIC ---
     def create_side_tab(self, text, target_page, is_active=False):

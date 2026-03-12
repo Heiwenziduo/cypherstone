@@ -2,9 +2,9 @@ import tkinter as tk
 from tkinter import Event, ttk
 import customtkinter as ctk
 import gui.style_constants as sty
-from gui.dialog import input_dialog
-from script.data import user_db, file_path_picker
-from script.asymmetry import import_keys, export_public_key, create_key_pairs
+import script.data as cdata
+from gui.dialog import alias_dialog
+from script.asymmetry import import_public_key, query_export_public_key, create_key_pairs
 
 class UserFrame(ctk.CTkFrame):
     ''''''
@@ -69,7 +69,6 @@ class UserFrame(ctk.CTkFrame):
         self.tree.column("Status", width=80, stretch=False, anchor="center")
         self.tree.pack(fill="both", expand=True, pady=(0, 0))
 
-        self.tree_selection_fp = ""
         self.db_data = []
         self.init_table()
         '''
@@ -89,25 +88,25 @@ class UserFrame(ctk.CTkFrame):
         # clear all data and fetch again. # glitch: selection loss
         for item in self.tree.get_children():
             self.tree.delete(item)
-        self.db_data = user_db.list_all_table_data()
+        self.db_data = cdata.user_db.list_all_table_data()
         for item in self.db_data:
-            print("init row: ", item)
-            # if item[0] == self.tree_selection_fp:
-                # item = (self.tree_selection_fp + "?????" if i==0 else e for i, e in enumerate(item)) # generator object
+            # print("init row: ", item)
+            # if item[0] == cdata._current_user_fp:
+                # item = (cdata._current_user_fp + "?????" if i==0 else e for i, e in enumerate(item)) # generator object
                 # print(item)
             self.tree.insert("", tk.END, values=item)
 
     def on_tree_selected(self, event: Event[ttk.Treeview]):
         tree = event.widget
         selected_item = tree.selection()
-        print(selected_item)
-        selected_row = tree.item(selected_item[0])["values"]
-        if selected_item and selected_row[0] != self.tree_selection_fp:
-            # print(tree.item(selected_item[0])["values"])
-            self.tree_selection_fp = selected_row[0]
-            # tree.item(selected_item[0], values=(selected_row[0], "1111" + selected_row[1], selected_row[2]))
-            print("new fp", self.tree_selection_fp)
-            # self.init_table()
+        if selected_item:
+            selected_row = tree.item(selected_item[0])["values"]
+            if selected_row and selected_row[0] != cdata._current_user_fp:
+                # print(tree.item(selected_item[0])["values"])
+                cdata._current_user_fp = selected_row[0]
+                # tree.item(selected_item[0], values=(selected_row[0], "1111" + selected_row[1], selected_row[2]))
+                print("new fp", cdata._current_user_fp)
+                # self.init_table()
 
     def update_current_user(self):
         ''''''
@@ -115,37 +114,26 @@ class UserFrame(ctk.CTkFrame):
     def user_operations(self, button_type):
         print(button_type)
         if button_type == "import":
-            file_path = file_path_picker()
+            file_path = cdata.file_path_picker()
             if file_path:
-                ## open a dialog and get alias
-                alias = self.open_input_dialog(text="Type in a number:", title="Test")
+                alias = alias_dialog(self)
                 if alias:
-                    import_keys(alias, file_path=file_path)
+                    # TODO: maybe analyze first, then type alias
+                    import_public_key(alias, file_path=file_path)
+                    self.init_table()
                 else:
                     print("alias can not be empty!")
+
         elif button_type == "export":
-            rowdata = user_db.get_row_by_fp(self.tree_selection_fp)
-            if not rowdata:
-                print("///row-data is None///")
-                return
-            name = rowdata[0] + ".public_key.pem"
-            file_path = file_path_picker(name)
-            if file_path:
-                export_public_key("", file_path)
+            if cdata._current_user_fp:
+                query_export_public_key(cdata._current_user_fp)
             else:
-                print()
+                print("no current user to export!")
 
         elif button_type == "new pair":
-            ## open a dialog and get alias
-            alias = input_dialog(self)
-            # print(alias)
+            alias = alias_dialog(self)
             if alias:
                 create_key_pairs(alias)
                 self.init_table()
-            
-
-    def open_input_dialog(self, *args, **kwargs):
-        ''''''
-        dialog = ctk.CTkInputDialog(*args, **kwargs)
-        return dialog.get_input()
-
+            else:
+                print("alias can not be empty!")
