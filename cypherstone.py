@@ -99,7 +99,7 @@ class CypherStoneApp(ctk.CTk):
         self.all_tabs = [self.tab_users, self.tab_encypher, self.tab_decypher, self.tab_setting]
 
         # ==========================================
-        # BOTTOM CONSOLE SCREEN
+        # #BOTTOM CONSOLE SCREEN
         # ==========================================
         self.console_screen = csc.ConsoleScreen(self.main_frame, height=180, corner_radius=2,
                                         border_color="#ffffff", border_width=1,
@@ -107,7 +107,7 @@ class CypherStoneApp(ctk.CTk):
         self.console_screen.pack(side="bottom", fill="both", **sty.bundle_main_frame_padding, pady=(0, 12))
         csc._app_console_screen = self.console_screen
 
-        self.after(200, lambda: csc.cys_console("Welcome using CypherStone."))
+        self.after(200, lambda: csc.cys_greeting())
 
     # --- TAB NAVIGATION LOGIC ---
     def create_side_tab(self, text, target_page, is_active=False):
