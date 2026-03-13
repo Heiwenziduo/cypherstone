@@ -6,7 +6,6 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
 from gui.console_screen import cys_console
-from script.openpgp import openpgp_encrypt, openpgp_decrypt
 from script.data import file_path_picker, user_db
 
 '''
@@ -16,6 +15,34 @@ performance along with various certifications that may be relevant to developers
 '''
 
 _default_passphrase = b"alohomora"
+
+##
+def get_public_key_by_fp(fp: str):
+    ''''''
+    rowdata = user_db.get_row_by_fp(fp)
+    if not rowdata:
+        cys_console("Can not get data. Invalid finger-print.")
+        # TODO: throwing an exception and catching that at console screen maybe better.
+        return
+    alias = rowdata[0]
+    finger_print = rowdata[1]
+    public_bytes_der = rowdata[3]
+    '''
+    If your bytes are raw binary (often how they are stored in SQLite for efficiency),
+    you cannot just name the file .pem.
+    You must first turn them back into a Public Key object and then "export" them as PEM.
+    '''
+    public_key = serialization.load_der_public_key(public_bytes_der)
+    '''
+    PEM (.pem): It is "Human Readable."
+    You can open it in Notepad and see the headers. This is great for sharing keys with other people or systems.
+
+    DER/Bytes: It is "Machine Readable."
+    It takes up less space and is faster for a database like SQLite to process
+    because it doesn't have to deal with text encoding.
+    '''
+    # return (alias, finger_print, public_key)
+    return public_key
 
 ##
 def create_key_pairs(alias: str, key_size=2048, passphrase=_default_passphrase):
@@ -75,11 +102,7 @@ def query_export_public_key(fp: str):
         return
     name = rowdata[0] + ".public_key.pem"
     public_bytes_der = rowdata[3] # public-key blob already
-    '''
-    If your bytes are raw binary (often how they are stored in SQLite for efficiency),
-    you cannot just name the file .pem.
-    You must first turn them back into a Public Key object and then "export" them as PEM.
-    '''
+    
     public_key = serialization.load_der_public_key(public_bytes_der)
 
     file_path = file_path_picker(name)
@@ -92,14 +115,7 @@ def query_export_public_key(fp: str):
             ))
         cys_console("save file to: ", file_path)
 
-    '''
-    PEM (.pem): It is "Human Readable."
-    You can open it in Notepad and see the headers. This is great for sharing keys with other people or systems.
-
-    DER/Bytes: It is "Machine Readable."
-    It takes up less space and is faster for a database like SQLite to process
-    because it doesn't have to deal with text encoding.
-    '''
+    
 
 # if __name__ == "__main__":
     # openpgp_encrypt(public_key=public_key)

@@ -11,6 +11,7 @@ cyan2 = "#144870"
 dark1 = "#111111"
 dark2 = "#222222"
 dark3 = "#333333"
+dark4 = "#444444"
 black1 = "#030303"
 ## ============================================================================== ##
 titlebar_bg = black1
@@ -23,25 +24,32 @@ console_bg = black1
 
 ## ============================================================================== ##
 bundle_main_frame_padding = {
-  "padx":15,
-  # "pady":5
-  }
+    "padx":15,
+    # "pady":5
+    }
 
 bundle_common_button = {
-  "fg_color":main_bg,
-  "corner_radius":4,
-  "border_width":2,
-  "border_color":main_border,
-  "text_color":white0,
-  "hover_color":main_hover,
-  }
+    "fg_color":main_bg,
+    "corner_radius":4,
+    "border_width":2,
+    "border_color":main_border,
+    "text_color":white0,
+    "hover_color":main_hover,
+    }
 
 bundle_sidebar_button = {
-  "width":60,
-  "height":60,
-  "corner_radius":2,
-  "border_width":2,
-  "border_color":main_border,
-  "text_color":white0,
-  "hover_color":main_hover,
-  }
+    "width":60,
+    "height":60,
+    "corner_radius":2,
+    "border_width":2,
+    "border_color":main_border,
+    "text_color":white0,
+    "hover_color":main_hover,
+    }
+
+bundle_formrow_button = {
+    "corner_radius":2,
+    "fg_color":dark3,
+    "hover_color":dark4,
+    "font":("Consolas", 12)
+    }

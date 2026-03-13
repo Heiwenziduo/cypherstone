@@ -20,6 +20,11 @@ def cys_greeting():
     else:
         print(f"Console not ready: greeting")
 
+def cys_console_current_user():
+    ''''''
+    if _app_console_screen:
+        _app_console_screen.write("")
+
 class ConsoleScreen(ctk.CTkFrame):
     def __init__(self, master, max_lines=100, *args, **kwargs):
         super().__init__(master, fg_color=sty.console_bg,

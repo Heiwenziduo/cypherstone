@@ -4,11 +4,16 @@ from pathlib import Path
 from tkinter import filedialog
 from gui.console_screen import cys_console
 from script.db import KeyDatabase
+from cryptography.hazmat.primitives import serialization
 
 # --- GLOBAL INTERFACE ---
 _current_user_fp: str = ""
 def current_user_fp():
   return _current_user_fp
+
+# def current_user_alias():
+#   row = user_db.get_row_by_fp(_current_user_fp)
+#   return row[0] if row else ""
 
 setting_list = ["check1", "check2", "check3", "check4"]
 json_data = {item : 0 for index, item in enumerate(setting_list)}

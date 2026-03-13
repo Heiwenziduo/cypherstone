@@ -8,21 +8,22 @@ from cryptography.fernet import Fernet
 
 # encrypted file suffix
 _suffix = ".cys"
+'''.cys encrypted file suffix'''
 #
 _separator = b"---SEP---"
 
 ## use public key to encrypt a file
-def openpgp_encrypt(public_key: rsa.RSAPublicKey):
+def openpgp_encrypt(public_key, file_path: str):
   # 1. Generate a random Symmetric key (The "Session Key")
   session_key = Fernet.generate_key()
   cipher_aes = Fernet(session_key)
 
   # 2. Read your file as bytes
-  filename = browse_file()
-  if not os.path.exists(filename):
-    print("not exist")
-    return
-  with open(filename, "rb") as f:
+  # filename = browse_file()
+  # if not os.path.exists(filename):
+  #   print("not exist")
+  #   return
+  with open(file_path, "rb") as f:
     file_data = f.read()
 
   # 3. Encrypt the file data
@@ -39,11 +40,11 @@ def openpgp_encrypt(public_key: rsa.RSAPublicKey):
   )
 
   # 5. Save the result (This is your .pgp style file)
-  with open(f"{filename}{_suffix}", "wb") as f:
+  with open(f"{file_path}{_suffix}", "wb") as f:
     f.write(encrypted_session_key + _separator + encrypted_data)
 
 ## private key to decrypt
-def openpgp_decrypt(private_key: rsa.RSAPrivateKey):
+def openpgp_decrypt(private_key):
   filename = browse_file()
   if not os.path.exists(filename):
     print("not exist")
