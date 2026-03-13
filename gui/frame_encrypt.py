@@ -44,7 +44,7 @@ class EncypherFrame(ctk.CTkFrame):
 
         self.process_button = ctk.CTkButton(
             self,
-            text="Process", 
+            text="Encrypt", 
             command=self.process_encrypt_file, 
             **sty.bundle_common_button,
             state="disabled"

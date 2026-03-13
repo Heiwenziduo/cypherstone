@@ -19,6 +19,7 @@ _default_passphrase = b"alohomora"
 ##
 def get_public_key_by_fp(fp: str):
     ''''''
+    # TODO: empty fp always fetches the first row
     rowdata = user_db.get_row_by_fp(fp)
     if not rowdata:
         cys_console("Can not get data. Invalid finger-print.")
@@ -27,6 +28,8 @@ def get_public_key_by_fp(fp: str):
     alias = rowdata[0]
     finger_print = rowdata[1]
     public_bytes_der = rowdata[3]
+    print(f"fp: {fp}")
+    print(f"User {alias} is getting the public key.")
     '''
     If your bytes are raw binary (often how they are stored in SQLite for efficiency),
     you cannot just name the file .pem.
