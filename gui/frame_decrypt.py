@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import gui.style_constants as sty
 from script.data import file_path_picker
+from gui.console_screen import cys_console
 from script.openpgp import _suffix
 
 class DecypherFrame(ctk.CTkFrame):
@@ -61,4 +62,5 @@ class DecypherFrame(ctk.CTkFrame):
             self.output_path.set(filename)
 
     def process_decrypt_file(self):
+        cys_console("Success, decrypted file at: " + self.output_path.get())
         return

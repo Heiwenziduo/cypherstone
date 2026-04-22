@@ -82,6 +82,7 @@ class EncypherFrame(ctk.CTkFrame):
         public_key = get_public_key_by_fp(current_user_fp())
         if public_key:
             openpgp_encrypt(public_key, self.input_path.get())
+            # TODO: 1.do NOT block main thread 2.loadingbar(console) 3.show total time-use
             cys_console("Success, encrypted file at: " + self.output_path.get())
         # openpgp_encrypt()
         # success = True

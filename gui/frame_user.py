@@ -4,6 +4,7 @@ import customtkinter as ctk
 import gui.style_constants as sty
 import script.data as cdata
 from gui.dialog import alias_dialog
+from gui.console_screen import cys_console
 from script.asymmetry import import_public_key, query_export_public_key, create_key_pairs
 
 class UserFrame(ctk.CTkFrame):
@@ -121,8 +122,8 @@ class UserFrame(ctk.CTkFrame):
                     # TODO: maybe analyze first, then type alias
                     import_public_key(alias, file_path=file_path)
                     self.init_table()
-                else:
-                    print("alias can not be empty!")
+                # else:
+                #     print("alias can not be empty!")
 
         elif button_type == "export":
             if cdata._current_user_fp:
@@ -135,5 +136,6 @@ class UserFrame(ctk.CTkFrame):
             if alias:
                 create_key_pairs(alias)
                 self.init_table()
-            else:
-                print("alias can not be empty!")
+                cys_console("New pair created: " + alias)
+            # else:
+            #     print("alias can not be empty!")
