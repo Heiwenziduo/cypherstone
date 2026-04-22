@@ -95,5 +95,5 @@ def alias_dialog(root, pre_input: str = ""):
     if dialog.result:
         return dialog.result
     else:
-        cys_console("Alias is empty, stopping operation...")
+        cys_console("Alias is empty, operation desrupted...")
         return dialog.result

@@ -1,3 +1,5 @@
+from collections import deque
+
 import customtkinter as ctk
 import gui.style_constants as sty
 
@@ -17,13 +19,14 @@ def cys_greeting():
     '''Hello from CypherStone.'''
     if _app_console_screen:
         _app_console_screen.write("Welcome using CypherStone.", is_greeting=True)
+        cys_console_current_user()
     else:
         print(f"Console not ready: greeting")
 
 def cys_console_current_user():
     ''''''
     if _app_console_screen:
-        _app_console_screen.write("")
+        _app_console_screen.write(f"Current user: {"unknown user"}.")
 
 class ConsoleScreen(ctk.CTkFrame):
     def __init__(self, master, max_lines=100, *args, **kwargs):
@@ -47,17 +50,55 @@ class ConsoleScreen(ctk.CTkFrame):
         self.txt.tag_config("error", foreground="#FF4444")   # Soft Red
         self.txt.tag_config("cursor", foreground="white")
         
+        # cursor
         self.cursor_char = "█" # substitute: _  ┃
         self.cursor_visible = False
-        self.is_typing = False # Track if typewriter is active
+        self.MIN_DELAY = 5
+        self.MAX_DELAY = 40
+        self.BASE_DELAY = 30
         
+        # queue
+        self.msg_queue = deque() # Stores (message, tag) tuples
+        self.is_processing = False
+
         # Start the blinking loop immediately
         self._blink()
+
+    def write(self, message, tag="info", typewriter=True, is_greeting=False):
+        """Public method to add messages to the queue."""
+        msg = f"> {message}" if is_greeting else f"\n> {message}" # this make cursor at the same line
+        self.msg_queue.append((msg, tag))
+        if not self.is_processing:
+            self._process_queue()
+
+        # if typewriter:
+        #     self._typewriter_step(msg, tag, 0)
+        # else:
+        #     self.textbox.insert("end", msg, tag)
+        #     self._finish_writing()
+
+    def _process_queue(self):
+        """Picks the next message from the queue."""
+        if not self.msg_queue:
+            self._finish_writing()
+            return
+
+        self.is_processing = True
+        self.textbox.configure(state="normal")
+
+        # Remove cursor before typing starts
+        if self.cursor_visible:
+            self.textbox.delete("end-2c", "end-1c")
+            self.cursor_visible = False
+
+        next_msg, tag = self.msg_queue.popleft()
+        left = len(self.msg_queue)
+        self._typewriter_step(next_msg, tag, 0)
 
     def _blink(self):
         """Toggle the cursor on and off."""
         # Only blink if we aren't currently typing (typewriter handles its own cursor)
-        if not self.is_typing:
+        if not self.is_processing:
             self.textbox.configure(state="normal")
             if self.cursor_visible:
                 # Delete the last character (the cursor)
@@ -68,46 +109,32 @@ class ConsoleScreen(ctk.CTkFrame):
                 self.textbox.insert("end", self.cursor_char, "cursor")
                 self.cursor_visible = True
             self.textbox.configure(state="disabled")
-
         # Repeat every a few ms
         self.after(750, self._blink)
 
-    def write(self, message, tag="info", typewriter=True, is_greeting=False):
-        self.is_typing = True
-        self.textbox.configure(state="normal")
-        
-        # Remove cursor before starting typewriter
-        if self.cursor_visible:
-            self.textbox.delete("end-2c", "end-1c")
-            self.cursor_visible = False
-
-        # Check if this is the first line
-        # is_greeting = len(self.textbox.get("0.0", "end")) == 0 or self.textbox.get("0.0", "end").startswith(self.cursor_char)
-        msg = f"> {message}" if is_greeting else f"\n> {message}" # this make cursor at the same line
-
-        if typewriter:
-            self._typewriter_effect(msg, tag, 0)
-        else:
-            self.textbox.insert("end", msg, tag)
-            self._finish_writing()
-
-    def _typewriter_effect(self, full_text, tag, index):
+    def _typewriter_step(self, full_text, tag, index):
+        """Handles the actual character emergence."""
         if index < len(full_text):
             # Insert one character at a time with the tag
             self.textbox.insert("end", full_text[index], tag)
             self.textbox.see("end")
-            # Wait 30ms then call itself for the next character
-            # TODO: longer text shorter delay
-            delay = 30
-            self.after(delay, lambda: self._typewriter_effect(full_text, tag, index + 1))
+
+            queue_len = len(self.msg_queue)
+            dynamic_delay = self.BASE_DELAY // (queue_len + 1)
+            final_delay = max(self.MIN_DELAY, min(self.MAX_DELAY, dynamic_delay))
+            self.after(final_delay, lambda: self._typewriter_step(full_text, tag, index + 1))
         else:
-            self._finish_writing()
+            self._check_memory()
+            self._process_queue()
+        
 
     def _finish_writing(self):
         """Cleanup after text is finished."""
-        self._check_memory()
-        self.is_typing = False
+        # self._check_memory()
+        self.is_processing = False
         self.textbox.configure(state="disabled")
+        # self._blink()
+
 
     def _check_memory(self):
         # TODO: cursor effect may wreck the line_count
