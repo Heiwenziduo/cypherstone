@@ -36,6 +36,10 @@ def file_path_picker(file_name=None):
       # cys_console("save file to: ", file_path)
     return file_path
 
+def validate_file_path(file_name: str) -> bool:
+    '''check whether the path is authentic'''
+    return os.path.exists(file_name)
+
 ## json for setting
 '''
 Python executes A.py completely the first time it is imported.

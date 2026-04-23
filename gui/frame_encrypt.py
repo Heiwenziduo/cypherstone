@@ -4,6 +4,7 @@ from gui.console_screen import cys_console
 import gui.style_constants as sty
 from script.asymmetry import get_public_key_by_fp
 from script.data import current_user_fp, file_path_picker
+from script.errors import CryptoError, error_handler
 from script.openpgp import _suffix, openpgp_encrypt
 
 class EncypherFrame(ctk.CTkFrame):
@@ -74,16 +75,19 @@ class EncypherFrame(ctk.CTkFrame):
             self.output_path.set(filename)
 
     def process_encrypt_file(self):
-        # cys_console("Start encrypting...")
+        cys_console("Start encrypting...")
         self.process_button.configure(state="disabled")
         self.after(200, lambda: self.process_button.configure(state="normal"))
 
         # print("encrypt: ", self.input_path.get(), " ---> ", self.output_path.get())
         public_key = get_public_key_by_fp(current_user_fp())
         if public_key:
-            openpgp_encrypt(public_key, self.input_path.get())
-            # TODO: 1.do NOT block main thread 2.loadingbar(console) 3.show total time-use
-            cys_console("Success, encrypted file at: " + self.output_path.get())
+            try:
+                openpgp_encrypt(public_key, self.input_path.get(), self.output_path.get())
+                # TODO: 1.do NOT block main thread 2.loadingbar(console) 3.show total time-use
+                cys_console("Success, encrypted file at: " + self.output_path.get())
+            except CryptoError as e:
+                error_handler(e)
         # openpgp_encrypt()
         # success = True
         # if success:

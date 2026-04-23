@@ -7,11 +7,11 @@ import gui.style_constants as sty
 _app_console_screen: ConsoleScreen | None = None
 '''This variable holds the console screen instance.'''
 
-def cys_console(*text):
+def cys_console(*text, tag="info"):
     '''log something on the console screen'''
     if _app_console_screen:
         for t in text:
-            _app_console_screen.write(t)
+            _app_console_screen.write(t, tag=tag)
     else:
         print(f"Console not ready: {text}")
 
