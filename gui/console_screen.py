@@ -1,11 +1,29 @@
 from collections import deque
+import multiprocessing
 
 import customtkinter as ctk
 import gui.style_constants as sty
+from thread.cs_multiprocessing import multiprocessing_decrypt, multiprocessing_encrypt
 
 # --- GLOBAL INTERFACE ---
 _app_console_screen: ConsoleScreen | None = None
 '''This variable holds the console screen instance.'''
+_app_multiprocessing_queue = multiprocessing.Queue()
+''''''
+
+def multiprocessing_crypto(name: str, *args):
+    '''name=encrypt for encrypting otherwise for decrypting'''
+    if _app_console_screen:
+        target = multiprocessing_encrypt if name=="encrypt" else multiprocessing_decrypt
+        ## RSAPublicKey is unhashable
+        worker = multiprocessing.Process(target=target, args={*args, _app_multiprocessing_queue})
+        worker.start()
+
+        _app_console_screen._multiprocessing_queue()
+
+        return worker
+
+
 
 def cys_console(*text, tag="info"):
     '''log something on the console screen'''
@@ -14,6 +32,9 @@ def cys_console(*text, tag="info"):
             _app_console_screen.write(t, tag=tag)
     else:
         print(f"Console not ready: {text}")
+
+def cys_error(e: Exception):
+    cys_console(e, tag="error")
 
 def cys_greeting():
     '''Hello from CypherStone.'''
@@ -69,7 +90,7 @@ class ConsoleScreen(ctk.CTkFrame):
         msg = f"> {message}" if is_greeting else f"\n> {message}" # this make cursor at the same line
         self.msg_queue.append((msg, tag))
         if not self.is_processing:
-            self._process_queue()
+            self._msg_queue()
 
         # if typewriter:
         #     self._typewriter_step(msg, tag, 0)
@@ -77,7 +98,7 @@ class ConsoleScreen(ctk.CTkFrame):
         #     self.textbox.insert("end", msg, tag)
         #     self._finish_writing()
 
-    def _process_queue(self):
+    def _msg_queue(self):
         """Picks the next message from the queue."""
         if not self.msg_queue:
             self._finish_writing()
@@ -94,6 +115,28 @@ class ConsoleScreen(ctk.CTkFrame):
         next_msg, tag = self.msg_queue.popleft()
         left = len(self.msg_queue)
         self._typewriter_step(next_msg, tag, 0)
+
+    def _multiprocessing_queue(self):
+        """Checks the queue every 100ms."""
+        try:
+            while not _app_multiprocessing_queue.empty():
+                msg = _app_multiprocessing_queue.get_nowait()
+                if msg == "Done":
+                    # log_to_console("Success!", tag="success")
+                    return
+                elif "Error" in str(msg):
+                    # log_to_console(msg, tag="error")
+                    return
+                else:
+                    ''
+                    # progress bar number
+                    # log_to_console(f"Progress: {msg}")
+                    
+                    # Keep checking until we get a 'Done' or 'Error'
+            self.after(100, self._multiprocessing_queue)
+        except:
+            # print()
+            pass
 
     def _blink(self):
         """Toggle the cursor on and off."""
@@ -125,7 +168,7 @@ class ConsoleScreen(ctk.CTkFrame):
             self.after(final_delay, lambda: self._typewriter_step(full_text, tag, index + 1))
         else:
             self._check_memory()
-            self._process_queue()
+            self._msg_queue()
         
 
     def _finish_writing(self):

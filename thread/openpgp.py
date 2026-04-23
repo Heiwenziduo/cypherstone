@@ -6,7 +6,6 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.fernet import Fernet
 
-from script.data import validate_file_path
 from script.errors import CryptoError
 
 # encrypted file suffix
@@ -92,3 +91,7 @@ def openpgp_decrypt(private_key, input_file_path: str, output_file_path: str = "
 #   )
 #   print(filename)
 #   return filename
+
+def validate_file_path(file_name: str) -> bool:
+    '''check whether the path is authentic'''
+    return os.path.exists(file_name)

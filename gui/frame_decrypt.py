@@ -1,9 +1,9 @@
 import customtkinter as ctk
 import gui.style_constants as sty
 from script.data import file_path_picker
-from gui.console_screen import cys_console
-from script.errors import CryptoError, error_handler
-from script.openpgp import _suffix, openpgp_decrypt
+from gui.console_screen import cys_console, cys_error
+from script.errors import CryptoError
+from thread.openpgp import _suffix, openpgp_decrypt
 
 class DecypherFrame(ctk.CTkFrame):
     def __init__(self, master, *args, **kwargs):
@@ -72,5 +72,5 @@ class DecypherFrame(ctk.CTkFrame):
             openpgp_decrypt(private_key, self.input_path.get(), self.output_path.get())
             cys_console("Success, decrypted file at: " + self.output_path.get())
         except CryptoError as e:
-            error_handler(e)
+            cys_error(e)
         return

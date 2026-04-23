@@ -1,8 +1,5 @@
 import sys
 
-from gui.console_screen import cys_console
-
-
 class CypherStoneError(Exception):
     def __init__(self, *args,):
         super().__init__(*args)
@@ -25,6 +22,3 @@ class CryptoError(CypherStoneError):
 #         print(error_msg)
 
 # sys.excepthook = global_exception_handler
-
-def error_handler(e: Exception):
-    cys_console(e, tag="error")
