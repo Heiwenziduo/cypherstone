@@ -4,7 +4,7 @@ import customtkinter as ctk
 from tkinter import filedialog
 from gui.console_screen import cys_console, cys_error, multiprocessing_crypto
 import gui.style_constants as sty
-from script.asymmetry import get_public_key_by_fp
+# from script.user_manager import get_public_key_by_fp
 from script.data import current_user_fp, file_path_picker
 from script.errors import CryptoError
 from thread.openpgp import _suffix, openpgp_encrypt
@@ -80,32 +80,12 @@ class EncypherFrame(ctk.CTkFrame):
         cys_console("Start encrypting...")
         # self.update()
         self.process_button.configure(state="disabled")
-        self.after(200, lambda: self.process_button.configure(state="normal"))
+        self.after(2000, lambda: self.process_button.configure(state="normal"))
 
-        public_key = get_public_key_by_fp(current_user_fp())
-        if public_key:
-            # try:
-            #     openpgp_encrypt(public_key, self.input_path.get(), self.output_path.get())
-            #     # TODO: 1.do NOT block main thread 2.loadingbar(console) 3.show total time-use
-            #     cys_console("Success, encrypted file at: " + self.output_path.get())
-            # except CryptoError as e:
-            #     error_handler(e)
-            
-            # threading.Thread(
-            #     target=thread_crypto_task,
-            #     args=(openpgp_encrypt, on_crypto_task_complete, public_key, self.input_path.get(), self.output_path.get())
-            #     ).start()
-
-            # futures_executor.submit(lambda: openpgp_encrypt(public_key, self.input_path.get(), self.output_path.get()))
-            
-            inpath = self.input_path.get()
-            outpath = self.output_path.get()
-
-            # start_crypto_thread(
-            #     lambda: openpgp_encrypt(public_key, inpath, outpath),
-            #     lambda: cys_console("Success, encrypted file at: " + outpath))
-
-            multiprocessing_crypto("encrypt", public_key, inpath, outpath)
+        fp = current_user_fp()
+        inpath = self.input_path.get()
+        outpath = self.output_path.get()
+        multiprocessing_crypto("encrypt", fp, inpath, outpath)
 
         # openpgp_encrypt()
         # success = True

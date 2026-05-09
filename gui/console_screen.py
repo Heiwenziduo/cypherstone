@@ -16,7 +16,7 @@ def multiprocessing_crypto(name: str, *args):
     if _app_console_screen:
         target = multiprocessing_encrypt if name=="encrypt" else multiprocessing_decrypt
         ## RSAPublicKey is unhashable
-        worker = multiprocessing.Process(target=target, args={*args, _app_multiprocessing_queue})
+        worker = multiprocessing.Process(target=target, args=(*args, _app_multiprocessing_queue))
         worker.start()
 
         _app_console_screen._multiprocessing_queue()
@@ -120,13 +120,21 @@ class ConsoleScreen(ctk.CTkFrame):
         """Checks the queue every 100ms."""
         try:
             while not _app_multiprocessing_queue.empty():
-                msg = _app_multiprocessing_queue.get_nowait()
-                if msg == "Done":
-                    # log_to_console("Success!", tag="success")
-                    return
-                elif "Error" in str(msg):
-                    # log_to_console(msg, tag="error")
-                    return
+                msg_raw = _app_multiprocessing_queue.get_nowait()
+                print(msg_raw)
+                msg_raw = str(msg_raw).split(";")
+                prefix = msg_raw[0]
+                msg = ""
+                try:
+                    msg = msg_raw[1]
+                except:
+                    pass
+                if prefix == "Done":
+                    self.write(msg, "success")
+                    # return
+                elif prefix == "Error":
+                    self.write(msg, "error")
+                    # return
                 else:
                     ''
                     # progress bar number
@@ -134,8 +142,8 @@ class ConsoleScreen(ctk.CTkFrame):
                     
                     # Keep checking until we get a 'Done' or 'Error'
             self.after(100, self._multiprocessing_queue)
-        except:
-            # print()
+        except Exception as e:
+            print(f"error occors...\n {e}")
             pass
 
     def _blink(self):

@@ -5,7 +5,7 @@ import gui.style_constants as sty
 import script.data as cdata
 from gui.dialog import alias_dialog
 from gui.console_screen import cys_console
-from script.asymmetry import import_public_key, query_export_public_key, create_key_pairs
+from script.user_manager import import_public_key, query_export_public_key, create_key_pairs
 
 class UserFrame(ctk.CTkFrame):
     ''''''
