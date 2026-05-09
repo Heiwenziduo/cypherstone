@@ -1,9 +1,9 @@
 import customtkinter as ctk
 import gui.style_constants as sty
 from script.data import file_path_picker
-from gui.console_screen import cys_console, cys_error
+from gui.console_screen import cys_console, cys_error, multiprocessing_crypto
 from script.errors import CryptoError
-from thread.openpgp import _suffix, openpgp_decrypt
+from script.constants import c_file_suffix
 
 class DecypherFrame(ctk.CTkFrame):
     def __init__(self, master, *args, **kwargs):
@@ -54,7 +54,7 @@ class DecypherFrame(ctk.CTkFrame):
             self.input_file_button.configure(anchor="w")
             self.output_file_button.configure(state="normal")
             self.process_button.configure(state="normal")
-            self.output_path.set(filename.removesuffix(_suffix))
+            self.output_path.set(filename.removesuffix(c_file_suffix))
 
     def output_file(self):
         ''''''
@@ -65,12 +65,14 @@ class DecypherFrame(ctk.CTkFrame):
     def process_decrypt_file(self):
         cys_console("Start decrypting...")
         self.process_button.configure(state="disabled")
-        self.after(200, lambda: self.process_button.configure(state="normal"))
+        self.after(2000, lambda: self.process_button.configure(state="normal"))
         
-        private_key = ""
-        try:
-            openpgp_decrypt(private_key, self.input_path.get(), self.output_path.get())
-            cys_console("Success, decrypted file at: " + self.output_path.get())
-        except CryptoError as e:
-            cys_error(e)
-        return
+        inpath = self.input_path.get()
+        outpath = self.output_path.get()
+        multiprocessing_crypto("decrypt", inpath, outpath)
+        # try:
+        #     openpgp_decrypt(private_key, self.input_path.get(), self.output_path.get())
+        #     cys_console("Success, decrypted file at: " + self.output_path.get())
+        # except CryptoError as e:
+        #     cys_error(e)
+        # return

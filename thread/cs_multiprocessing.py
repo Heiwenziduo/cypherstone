@@ -1,40 +1,34 @@
 import multiprocessing
-from thread.openpgp import openpgp_encrypt
+from thread.openpgp import openpgp_encrypt, openpgp_decrypt
 
-def multiprocessing_encrypt(key, in_path, out_path, queue):
+
+
+def multiprocessing_encrypt(fp, in_path, out_path, queue):
     """This function lives in a totally separate process."""
     print('////////////////////////////////////////////////////')
-    print(key, in_path, out_path, queue)
+    print(fp, in_path, out_path, queue)
     try:
-        # Example of progress tracking
         queue.put("Start")
+        
+        openpgp_encrypt(fp, in_path, out_path)
 
-        openpgp_encrypt(key, in_path, out_path)
-
-        # Suppose your encryption has steps:
+        # TODO progressing bar
         # For 1 to 100:
         #    ... encrypt chunk ...
         #    queue.put(current_percent) 
         
-        # perform_encryption(in_path, out_path, key)
         
-        queue.put("Done")
+        queue.put(f"Done;Success, encrypted file at: {out_path}")
     except Exception as e:
-        queue.put(f"Error: {str(e)}")
+        queue.put(f"Error;Error: {str(e)}")
 
-def multiprocessing_decrypt(key, in_path, out_path, queue):
+def multiprocessing_decrypt(in_path, out_path, queue):
     """This function lives in a totally separate process."""
     try:
-        # Example of progress tracking
         queue.put("Start")
         
-        # Suppose your encryption has steps:
-        # For 1 to 100:
-        #    ... encrypt chunk ...
-        #    queue.put(current_percent) 
+        openpgp_decrypt(in_path, out_path)
         
-        # perform_encryption(in_path, out_path, key)
-        
-        queue.put("Done")
+        queue.put(f"Done;Success, decrypted file at: {out_path}")
     except Exception as e:
-        queue.put(f"Error: {str(e)}")
+        queue.put(f"Error;Error: {str(e)}")

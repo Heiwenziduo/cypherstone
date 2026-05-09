@@ -5,8 +5,9 @@ import sys
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
-from gui.console_screen import cys_console
+# from gui.console_screen import cys_console
 from script.data import file_path_picker, user_db
+from script.constants import c_default_passphrase
 
 '''
 cryptography depends on the OpenSSL C library for all cryptographic operation.
@@ -14,41 +15,8 @@ OpenSSL is the de facto standard for cryptographic libraries and provides high
 performance along with various certifications that may be relevant to developers.
 '''
 
-_default_passphrase = b"alohomora"
-
 ##
-def get_public_key_by_fp(fp: str):
-    ''''''
-    # TODO: empty fp always fetches the first row
-    rowdata = user_db.get_row_by_fp(fp)
-    if not rowdata:
-        cys_console("Can not get data. Invalid finger-print.")
-        # TODO: throwing an exception and catching that at console screen maybe better.
-        return
-    alias = rowdata[0]
-    finger_print = rowdata[1]
-    public_bytes_der = rowdata[3]
-    print(f"fp: {fp}")
-    print(f"User {alias} is getting the public key.")
-    '''
-    If your bytes are raw binary (often how they are stored in SQLite for efficiency),
-    you cannot just name the file .pem.
-    You must first turn them back into a Public Key object and then "export" them as PEM.
-    '''
-    public_key = serialization.load_der_public_key(public_bytes_der)
-    '''
-    PEM (.pem): It is "Human Readable."
-    You can open it in Notepad and see the headers. This is great for sharing keys with other people or systems.
-
-    DER/Bytes: It is "Machine Readable."
-    It takes up less space and is faster for a database like SQLite to process
-    because it doesn't have to deal with text encoding.
-    '''
-    # return (alias, finger_print, public_key)
-    return public_key
-
-##
-def create_key_pairs(alias: str, key_size=2048, passphrase=_default_passphrase):
+def create_key_pairs(alias: str, key_size=2048, passphrase=c_default_passphrase):
     private_key = rsa.generate_private_key(
         public_exponent=65537,
         key_size=key_size,
@@ -71,7 +39,7 @@ def create_key_pairs(alias: str, key_size=2048, passphrase=_default_passphrase):
         pub_bytes=public_bytes
     )
 
-def import_public_key(alias: str, file_path, password=_default_passphrase):
+def import_public_key(alias: str, file_path, password=c_default_passphrase):
     # TODO: import private
     '''only public now'''
     with open(file_path, "rb") as key_file:
@@ -101,7 +69,7 @@ def query_export_public_key(fp: str):
     '''export public key to a specific location'''
     rowdata = user_db.get_row_by_fp(fp)
     if not rowdata:
-        cys_console("///row-data is None///")
+        # cys_console("///row-data is None///")
         return
     name = rowdata[0] + ".public_key.pem"
     public_bytes_der = rowdata[3] # public-key blob already
@@ -116,7 +84,7 @@ def query_export_public_key(fp: str):
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PublicFormat.SubjectPublicKeyInfo
             ))
-        cys_console("save file to: ", file_path)
+        # cys_console("save file to: ", file_path)
 
     
 

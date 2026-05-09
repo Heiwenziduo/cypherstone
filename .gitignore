@@ -13,4 +13,4 @@ wheels/
 settings.json
 
 # Test
-test/
+_test/
