@@ -7,6 +7,7 @@ from cryptography.hazmat.primitives import serialization
 
 # from gui.console_screen import cys_console
 from script.data import file_path_picker, user_db
+from script.constants import c_default_passphrase
 
 '''
 cryptography depends on the OpenSSL C library for all cryptographic operation.
@@ -14,10 +15,8 @@ OpenSSL is the de facto standard for cryptographic libraries and provides high
 performance along with various certifications that may be relevant to developers.
 '''
 
-_default_passphrase = b"alohomora"
-
 ##
-def create_key_pairs(alias: str, key_size=2048, passphrase=_default_passphrase):
+def create_key_pairs(alias: str, key_size=2048, passphrase=c_default_passphrase):
     private_key = rsa.generate_private_key(
         public_exponent=65537,
         key_size=key_size,
@@ -40,7 +39,7 @@ def create_key_pairs(alias: str, key_size=2048, passphrase=_default_passphrase):
         pub_bytes=public_bytes
     )
 
-def import_public_key(alias: str, file_path, password=_default_passphrase):
+def import_public_key(alias: str, file_path, password=c_default_passphrase):
     # TODO: import private
     '''only public now'''
     with open(file_path, "rb") as key_file:

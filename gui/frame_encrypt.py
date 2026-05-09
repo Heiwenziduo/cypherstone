@@ -7,7 +7,7 @@ import gui.style_constants as sty
 # from script.user_manager import get_public_key_by_fp
 from script.data import current_user_fp, file_path_picker
 from script.errors import CryptoError
-from thread.openpgp import _suffix, openpgp_encrypt
+from script.constants import c_file_suffix
 
 class EncypherFrame(ctk.CTkFrame):
     def __init__(self, master, *args, **kwargs):
@@ -68,7 +68,7 @@ class EncypherFrame(ctk.CTkFrame):
             self.process_button.configure(state="normal")
             # TODO: only change file name but remember the folder path
             # if not self.output_path.get():
-            self.output_path.set(filename + _suffix)
+            self.output_path.set(filename + c_file_suffix)
 
     def output_file(self):
         ''''''
