@@ -10,31 +10,12 @@ from cryptography.hazmat.primitives import serialization
 _current_user_fp: str = ""
 def current_user_fp():
   return _current_user_fp
+def current_user_alias():
+  row = user_db.get_row_by_fp(_current_user_fp)
+  return row[0] if row else ""
 
-# def current_user_alias():
-#   row = user_db.get_row_by_fp(_current_user_fp)
-#   return row[0] if row else ""
-
-setting_list = ["check1", "check2", "check3", "check4"]
+setting_list = ["last_fp"]
 json_data = {item : 0 for index, item in enumerate(setting_list)}
-
-## utilities
-def file_path_picker(file_name=None):
-    '''when file_name is given, use save-file dialog'''
-    if not file_name:
-      # try: # hide logs in console
-      file_path = filedialog.askopenfilename(
-          title="Select a file for CypherStone",
-          # initialdir=os.path.expanduser("~/Documents")
-      )
-    else:
-      file_path = filedialog.asksaveasfilename(
-          title="Save your files",
-          initialfile=file_name,
-          # defaultextension=".pem",
-      )
-      # cys_console("save file to: ", file_path)
-    return file_path
 
 ## json for setting
 '''
@@ -44,19 +25,48 @@ By the time B.py looks at X, the with open block has already finished.
 Python modules are cached.
 This means if you import A in ten different files, Python only runs the code in A.py once.
 '''
+
 if os.path.exists("settings.json"):
-    with open("settings.json", "r") as f:
-        saved_data = json.load(f)
-        # print("Loading saved setting...", saved_data)
-        for key in json_data:
-          if saved_data.get(key):
-            json_data[key] = saved_data[key]
-        # print("Loading complete", json_data)
+    try:
+        with open("settings.json", "r") as f:
+            saved_data = json.load(f)
+            # Load checkbox settings
+            for key in json_data:
+                if saved_data.get(key):
+                    json_data[key] = saved_data[key]
+            
+            # Load the saved fingerprint!
+            if "last_fp" in saved_data:
+                _current_user_fp = saved_data["last_fp"]
+    except Exception as e:
+        print(f"Error loading settings: {e}")
 
 def update_json(data):
     with open("settings.json", "w") as f:
-      json.dump(data, f)
+        json.dump(data, f)
     print("Local settings files have been updated.")
+
+def save_current_user_fp(fp: str):
+    """Safely updates the FP in memory and in the JSON file."""
+    global _current_user_fp
+    _current_user_fp = fp
+    
+    # 1. Read the existing file so other data wont be overwritten
+    saved_data = {}
+    if os.path.exists("settings.json"):
+        try:
+            with open("settings.json", "r") as f:
+                saved_data = json.load(f)
+        except Exception:
+            pass
+            
+    # 2. Update the fingerprint and save
+    saved_data["last_fp"] = fp
+    with open("settings.json", "w") as f:
+        json.dump(saved_data, f)
+
+
+
 
 ## SQLite for users (a user is a stored public key or key pairs)
 no_user = False
@@ -77,6 +87,25 @@ if len(user_db.list_all_aliases()) == 0:
   no_user = True
 
 # print("result", user_db.list_all_table_data())
+
+## utilities
+def file_path_picker(file_name=None):
+    '''when file_name is given, use save-file dialog'''
+    if not file_name:
+      # try: # hide logs in console
+      file_path = filedialog.askopenfilename(
+          title="Select a file for CypherStone",
+          # initialdir=os.path.expanduser("~/Documents")
+      )
+    else:
+      file_path = filedialog.asksaveasfilename(
+          title="Save your files",
+          initialfile=file_name,
+          # defaultextension=".pem",
+      )
+      # cys_console("save file to: ", file_path)
+    return file_path
+
 
 ## completely synchronous (a synchronous file system, amazing!)
 if __name__ == "__main__":

@@ -3,6 +3,7 @@ import multiprocessing
 
 import customtkinter as ctk
 import gui.style_constants as sty
+from script.data import current_user_alias, current_user_fp
 from thread.cs_multiprocessing import multiprocessing_decrypt, multiprocessing_encrypt
 
 # --- GLOBAL INTERFACE ---
@@ -36,18 +37,23 @@ def cys_console(*text, tag="info"):
 def cys_error(e: Exception):
     cys_console(e, tag="error")
 
+def cys_success(msg: str):
+    cys_console(msg, tag="success")
+
 def cys_greeting():
     '''Hello from CypherStone.'''
     if _app_console_screen:
-        _app_console_screen.write("Welcome using CypherStone.", is_greeting=True)
-        cys_console_current_user()
+        _app_console_screen.write("Hello from CypherStone.", is_greeting=True)
+        usr = current_user_fp()
+        if usr:
+            cys_console_current_user(usr)
     else:
         print(f"Console not ready: greeting")
 
-def cys_console_current_user():
+def cys_console_current_user(user: str):
     ''''''
     if _app_console_screen:
-        _app_console_screen.write(f"Current user: {"unknown user"}.")
+        _app_console_screen.write(f"Welcome back: {current_user_alias()}.", "success")
 
 class ConsoleScreen(ctk.CTkFrame):
     def __init__(self, master, max_lines=100, *args, **kwargs):

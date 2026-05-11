@@ -25,7 +25,7 @@ class UserFrame(ctk.CTkFrame):
         #     self.operation_frame_buttons.append(button)
         self.operation_frame_buttons.append(
             ctk.CTkButton(self.operation_frame, text="export", 
-                          width=80, command=lambda: self.user_operations("export"), **sty.bundle_common_button)
+                          width=80, command=lambda: self.user_operations("export"), state="disabled", **sty.bundle_common_button)
             )
         self.operation_frame_buttons.append(
             ctk.CTkButton(self.operation_frame, text="import", 
@@ -86,31 +86,54 @@ class UserFrame(ctk.CTkFrame):
         self.tree.bind("<<TreeviewSelect>>", self.on_tree_selected)
 
     def init_table(self):
-        # clear all data and fetch again. # glitch: selection loss
+        # clear all data and fetch again.
         for item in self.tree.get_children():
             self.tree.delete(item)
+        
         self.db_data = cdata.user_db.list_all_table_data()
+        
         for item in self.db_data:
-            # print("init row: ", item)
-            # if item[0] == cdata._current_user_fp:
-                # item = (cdata._current_user_fp + "?????" if i==0 else e for i, e in enumerate(item)) # generator object
-                # print(item)
-            self.tree.insert("", tk.END, values=item)
+            # self.tree.insert returns the unique ID of the row it just created
+            row_id = self.tree.insert("", tk.END, values=item)
+            # If this row matches saved user, auto-select it
+            if str(item[0]) == cdata._current_user_fp:
+                self.tree.selection_set(row_id)
+        self.update_star_display()
 
-    def on_tree_selected(self, event: Event[ttk.Treeview]):
+    def update_star_display(self):
+        """Updates the Treeview items to show a star next to the current user."""
+        for item in self.tree.get_children():
+            # Get the current row data
+            row_data = self.tree.item(item)["values"]
+            fp = str(row_data[0])
+            name = str(row_data[1])
+            status = str(row_data[2])
+
+            # Clean the name of any existing stars first to prevent "Alias ★ ★"
+            clean_name = name.replace(" ★", "")
+
+            # Add the star if this is the current user
+            if fp == cdata._current_user_fp:
+                new_name = f"{clean_name} ★"
+            else:
+                new_name = clean_name
+
+            # Update the row without deleting it
+            self.tree.item(item, values=(fp, new_name, status))
+
+    def on_tree_selected(self, event):
+        if cdata._current_user_fp:
+            self.operation_frame_buttons[0].configure(state="normal")
         tree = event.widget
         selected_item = tree.selection()
         if selected_item:
             selected_row = tree.item(selected_item[0])["values"]
-            if selected_row and selected_row[0] != cdata._current_user_fp:
-                # print(tree.item(selected_item[0])["values"])
-                cdata._current_user_fp = selected_row[0]
-                # tree.item(selected_item[0], values=(selected_row[0], "1111" + selected_row[1], selected_row[2]))
+            if selected_row and str(selected_row[0]) != cdata._current_user_fp:
+                cdata.save_current_user_fp(str(selected_row[0]))
                 print("new fp", cdata._current_user_fp)
-                # self.init_table()
+                
+                self.update_star_display()
 
-    def update_current_user(self):
-        ''''''
 
     def user_operations(self, button_type):
         print(button_type)

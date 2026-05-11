@@ -6,6 +6,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
 # from gui.console_screen import cys_console
+from gui.console_screen import cys_console, cys_success
 from script.data import file_path_picker, user_db
 from script.constants import c_default_passphrase
 
@@ -84,7 +85,7 @@ def query_export_public_key(fp: str):
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PublicFormat.SubjectPublicKeyInfo
             ))
-        # cys_console("save file to: ", file_path)
+        cys_console(f"Exported file at: {file_path}",)
 
     
 
