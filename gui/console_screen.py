@@ -88,6 +88,11 @@ class ConsoleScreen(ctk.CTkFrame):
         self.msg_queue = deque() # Stores (message, tag) tuples
         self.is_processing = False
 
+        # progress bar
+        # self.progressbar = ctk.CTkProgressBar(self, mode="determinate", progress_color="lime")
+        # self.progressbar.pack(fill="x", padx=5, pady=(0, 5))
+        # self.progressbar.set(0.0) # Start at 0%
+
         # Start the blinking loop immediately
         self._blink()
 
@@ -136,21 +141,22 @@ class ConsoleScreen(ctk.CTkFrame):
                 except:
                     pass
                 if prefix == "Done":
+                    # self.progressbar.set(1.0) # 100%
                     self.write(msg, "success")
                     # return
                 elif prefix == "Error":
                     self.write(msg, "error")
                     # return
-                else:
-                    ''
-                    # progress bar number
-                    # log_to_console(f"Progress: {msg}")
-                    
-                    # Keep checking until we get a 'Done' or 'Error'
+                elif isinstance(msg, float):
+                    '''progress bar number'''
+                    # self.progressbar.set(msg)
+
+                    # Keep checking until get a 'Done' or 'Error'
             self.after(100, self._multiprocessing_queue)
         except Exception as e:
             print(f"error occors...\n {e}")
             pass
+
 
     def _blink(self):
         """Toggle the cursor on and off."""
