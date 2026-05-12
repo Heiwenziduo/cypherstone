@@ -44,6 +44,21 @@ class KeyDatabase:
         result = self.cursor.fetchone()
         # print(result) # row
         return result if result else None
+    
+    def get_first_row(self):
+        # LIMIT 1 ensures that only fetch a single row to save memory.
+        query = "SELECT * FROM key_pairs ORDER BY created_at ASC LIMIT 1"
+        self.cursor.execute(query)
+        result = self.cursor.fetchone()
+        
+        return result if result else None
+    
+    def delete_row_by_fp(self, fp):
+        query = "DELETE FROM key_pairs WHERE fingerprint LIKE ?"
+        self.cursor.execute(query, (f"{fp}%",))
+        self.conn.commit()
+        # return True if at least one row was deleted, False otherwise
+        return self.cursor.rowcount > 0
 
     def list_all_aliases(self):
         self.cursor.execute("SELECT alias FROM key_pairs")

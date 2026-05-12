@@ -87,7 +87,9 @@ def query_export_public_key(fp: str):
             ))
         cys_console(f"Exported file at: {file_path}",)
 
-    
+def delete_user_data(fp: str):
+    result = user_db.delete_row_by_fp(fp)
+    return result
 
 # if __name__ == "__main__":
     # openpgp_encrypt(public_key=public_key)

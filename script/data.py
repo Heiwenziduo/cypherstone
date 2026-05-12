@@ -9,10 +9,17 @@ from cryptography.hazmat.primitives import serialization
 # --- GLOBAL INTERFACE ---
 _current_user_fp: str = ""
 def current_user_fp():
-  return _current_user_fp
+    return _current_user_fp
 def current_user_alias():
-  row = user_db.get_row_by_fp(_current_user_fp)
-  return row[0] if row else ""
+    row = user_db.get_row_by_fp(_current_user_fp)
+    return row[0] if row else ""
+def earliest_alias():
+    row = user_db.get_first_row()
+    return row[0] if row else ""
+def get_alias_by_fp(fp):
+    row = user_db.get_row_by_fp(fp)
+    return row[0] if row else ""
+
 
 setting_list = ["last_fp"]
 json_data = {item : 0 for index, item in enumerate(setting_list)}
@@ -71,6 +78,11 @@ def save_current_user_fp(fp: str):
 ## SQLite for users (a user is a stored public key or key pairs)
 no_user = False
 home_dir = Path.home() / ".cypherstone" # C:\Users\{current user}\.cypherstone
+if not os.path.exists(home_dir):
+    # SQLite will not create the folder
+    # If the folder doesn't exist on the new computer, it crashes immediately.
+    os.makedirs(home_dir) 
+    
 # userindex_json = home_dir / "index.json"
 # if userindex_json.exists():
 #   with open(userindex_json) as f:
@@ -84,7 +96,7 @@ home_dir = Path.home() / ".cypherstone" # C:\Users\{current user}\.cypherstone
 user_db = KeyDatabase(home_dir / "keys_storage.db")
 print(f"User list: {user_db.list_all_aliases()}")
 if len(user_db.list_all_aliases()) == 0:
-  no_user = True
+    no_user = True
 
 # print("result", user_db.list_all_table_data())
 
@@ -92,23 +104,23 @@ if len(user_db.list_all_aliases()) == 0:
 def file_path_picker(file_name=None):
     '''when file_name is given, use save-file dialog'''
     if not file_name:
-      # try: # hide logs in console
-      file_path = filedialog.askopenfilename(
-          title="Select a file for CypherStone",
-          # initialdir=os.path.expanduser("~/Documents")
-      )
+        # try: # hide logs in console
+        file_path = filedialog.askopenfilename(
+            title="Select a file for CypherStone",
+            # initialdir=os.path.expanduser("~/Documents")
+        )
     else:
-      file_path = filedialog.asksaveasfilename(
-          title="Save your files",
-          initialfile=file_name,
-          # defaultextension=".pem",
-      )
-      # cys_console("save file to: ", file_path)
+        file_path = filedialog.asksaveasfilename(
+            title="Save your files",
+            initialfile=file_name,
+            # defaultextension=".pem",
+        )
+        # cys_console("save file to: ", file_path)
     return file_path
 
 
 ## completely synchronous (a synchronous file system, amazing!)
 if __name__ == "__main__":
-  print(json_data)
-  for i, v in enumerate(json_data):
-    print(i, v)
+    print(json_data)
+    for i, v in enumerate(json_data):
+        print(i, v)

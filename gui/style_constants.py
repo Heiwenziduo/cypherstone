@@ -1,8 +1,8 @@
-transparent="transparent"
-border_width=2
-text_color="#ffbd2e"
-corner_radius=12
-hover_color="#594314"
+# transparent="transparent"
+# border_width=2
+# text_color="#ffbd2e"
+# corner_radius=12
+# hover_color="#594314"
 
 white0 = "#ffffff"
 blue1="#2e66ff"
@@ -13,6 +13,10 @@ dark2 = "#222222"
 dark3 = "#333333"
 dark4 = "#444444"
 black1 = "#030303"
+
+success_bright = "#00FF00"
+danger_bright = "#FF4444"
+danger_dark = "#BB3333"
 ## ============================================================================== ##
 titlebar_bg = black1
 main_bg = dark2

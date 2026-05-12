@@ -3,7 +3,7 @@ import multiprocessing
 
 import customtkinter as ctk
 import gui.style_constants as sty
-from script.data import current_user_alias, current_user_fp
+from script.data import current_user_alias, current_user_fp, earliest_alias
 from thread.cs_multiprocessing import multiprocessing_decrypt, multiprocessing_encrypt
 
 # --- GLOBAL INTERFACE ---
@@ -46,14 +46,17 @@ def cys_greeting():
         _app_console_screen.write("Hello from CypherStone.", is_greeting=True)
         usr = current_user_fp()
         if usr:
-            cys_console_current_user(usr)
+            _app_console_screen.write(f"Welcome back: {earliest_alias()}.", "success")
     else:
         print(f"Console not ready: greeting")
 
-def cys_console_current_user(user: str):
+def cys_console_current_user():
     ''''''
-    if _app_console_screen:
-        _app_console_screen.write(f"Welcome back: {current_user_alias()}.", "success")
+    current = current_user_alias()
+    if _app_console_screen and current:
+        _app_console_screen.write(f"Current user: {current}.")
+    else:
+        print(f"Current user: {current}.")
 
 class ConsoleScreen(ctk.CTkFrame):
     def __init__(self, master, max_lines=100, *args, **kwargs):
@@ -72,10 +75,10 @@ class ConsoleScreen(ctk.CTkFrame):
         # Define some "Highlighters" (Tags)
         # Note: We access the underlying tkinter widget using self.textbox._textbox
         self.txt = self.textbox._textbox 
-        self.txt.tag_config("info", foreground="white")
-        self.txt.tag_config("success", foreground="#00FF00") # Lime Green
-        self.txt.tag_config("error", foreground="#FF4444")   # Soft Red
-        self.txt.tag_config("cursor", foreground="white")
+        self.txt.tag_config("info", foreground=sty.white0)
+        self.txt.tag_config("success", foreground=sty.success_bright) # Lime Green
+        self.txt.tag_config("error", foreground=sty.danger_bright)   # Soft Red
+        self.txt.tag_config("cursor", foreground=sty.white0)
         
         # cursor
         self.cursor_char = "█" # substitute: _  ┃

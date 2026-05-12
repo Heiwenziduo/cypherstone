@@ -4,8 +4,8 @@ import customtkinter as ctk
 import gui.style_constants as sty
 import script.data as cdata
 from gui.dialog import alias_dialog
-from gui.console_screen import cys_console
-from script.user_manager import import_public_key, query_export_public_key, create_key_pairs
+from gui.console_screen import cys_console, cys_console_current_user
+from script.user_manager import delete_user_data, import_public_key, query_export_public_key, create_key_pairs
 
 class UserFrame(ctk.CTkFrame):
     ''''''
@@ -24,12 +24,16 @@ class UserFrame(ctk.CTkFrame):
         #     button.pack(padx=(6, 0), pady=(0, 4), side="right")
         #     self.operation_frame_buttons.append(button)
         self.operation_frame_buttons.append(
+            ctk.CTkButton(self.operation_frame, text="delete", 
+                          width=60, command=lambda: self.user_operations("delete"), **(sty.bundle_common_button | {"border_color":sty.danger_dark}),)
+            )
+        self.operation_frame_buttons.append(
             ctk.CTkButton(self.operation_frame, text="export", 
-                          width=80, command=lambda: self.user_operations("export"), state="disabled", **sty.bundle_common_button)
+                          width=60, command=lambda: self.user_operations("export"), state="disabled", **sty.bundle_common_button)
             )
         self.operation_frame_buttons.append(
             ctk.CTkButton(self.operation_frame, text="import", 
-                          width=80, command=lambda: self.user_operations("import"), **sty.bundle_common_button)
+                          width=60, command=lambda: self.user_operations("import"), **sty.bundle_common_button)
             )
         self.operation_frame_buttons.append(
             ctk.CTkButton(self.operation_frame, text="new pair", 
@@ -131,7 +135,7 @@ class UserFrame(ctk.CTkFrame):
             if selected_row and str(selected_row[0]) != cdata._current_user_fp:
                 cdata.save_current_user_fp(str(selected_row[0]))
                 print("new fp", cdata._current_user_fp)
-                
+                cys_console_current_user()
                 self.update_star_display()
 
 
@@ -140,7 +144,9 @@ class UserFrame(ctk.CTkFrame):
         if button_type == "import":
             file_path = cdata.file_path_picker()
             if file_path:
-                alias = alias_dialog(self)
+                print(file_path)
+                key_alias = file_path.split("/").pop().removesuffix(".public_key.pem")
+                alias = alias_dialog(self, key_alias)
                 if alias:
                     # TODO: maybe analyze first, then type alias
                     import_public_key(alias, file_path=file_path)
@@ -162,3 +168,12 @@ class UserFrame(ctk.CTkFrame):
                 cys_console("New pair created: " + alias)
             # else:
             #     print("alias can not be empty!")
+        
+        elif button_type == "delete":
+            if cdata._current_user_fp:
+                name = cdata.current_user_alias()
+                result = delete_user_data(cdata._current_user_fp)
+                if result:
+                    cys_console(f"User info has been deleted. Good luck, {name}.")
+                    self.init_table()
+

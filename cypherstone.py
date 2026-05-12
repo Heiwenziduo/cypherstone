@@ -1,3 +1,5 @@
+import multiprocessing
+
 import customtkinter as ctk
 import tkinter as tk
 from gui.frame_decrypt import DecypherFrame
@@ -169,5 +171,7 @@ class CypherStoneApp(ctk.CTk):
         self.state('iconic')
 
 if __name__ == "__main__":
+    # if it is being run as a child process, skips running the GUI and goes straight to executing the target function
+    multiprocessing.freeze_support()
     app = CypherStoneApp()
     app.mainloop()
