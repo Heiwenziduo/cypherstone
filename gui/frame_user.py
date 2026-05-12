@@ -127,7 +127,7 @@ class UserFrame(ctk.CTkFrame):
 
     def on_tree_selected(self, event):
         if cdata._current_user_fp:
-            self.operation_frame_buttons[0].configure(state="normal")
+            self.operation_frame_buttons[1].configure(state="normal")
         tree = event.widget
         selected_item = tree.selection()
         if selected_item:
